@@ -1,0 +1,73 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1.0">
+  <title>PlanetPulse – Global Metrics Globe</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+  <!-- Three.js + helpers from CDN (no build step) -->
+  <script src="https://unpkg.com/three@0.161.0/build/three.min.js"></script>
+  <script src="https://unpkg.com/three@0.161.0/examples/js/controls/OrbitControls.js"></script>
+  <script src="https://unpkg.com/three-globe@2.30.0"></script>
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">
+      <div class="glow-dot"></div>
+      <div>
+        <p class="eyebrow">PlanetPulse</p>
+        <h1>Global Metrics Globe</h1>
+      </div>
+    </div>
+    <div class="controls">
+      <label class="control">
+        Metric
+        <select id="metricSelect"></select>
+      </label>
+      <button id="spinToggle" class="control-btn" aria-label="Toggle globe spin">Pause Spin</button>
+      <button id="resetView" class="ghost-btn" aria-label="Reset camera view">Reset View</button>
+    </div>
+  </header>
+
+  <main class="layout">
+    <section class="globe-panel">
+      <div id="globeContainer" aria-label="3D globe visualization"></div>
+      <div id="legend" class="legend"></div>
+      <div class="timeline" aria-label="Metric timeline">
+        <button id="timePlay" class="control-btn sm" aria-label="Play timeline">Play</button>
+        <div class="slider-wrap">
+          <input type="range" id="yearSlider" min="0" max="3" step="1" value="3" aria-label="Year">
+          <div class="year-labels" aria-hidden="true">
+            <span>2010</span><span>2015</span><span>2020</span><span>2024</span>
+          </div>
+        </div>
+        <span id="yearDisplay" class="pill">2024</span>
+      </div>
+      <div id="status" class="status" role="status"></div>
+    </section>
+    <aside class="info-panel" aria-live="polite">
+      <h2>Details</h2>
+      <div id="detailCard" class="card muted">Hover or tap a city to inspect.</div>
+      <div class="mini-grid">
+        <div class="card">
+          <p class="label">Metric Snapshot</p>
+          <div id="metricSummary" class="metric-summary">Select a metric to see scale.</div>
+        </div>
+        <div class="card">
+          <p class="label">Interactions</p>
+          <ul class="list">
+            <li>Drag to rotate, scroll/ pinch to zoom.</li>
+            <li>Hover / tap points for details.</li>
+            <li>Pause spin while you explore.</li>
+          </ul>
+        </div>
+      </div>
+    </aside>
+  </main>
+
+  <script src="app.js"></script>
+</body>
+</html>

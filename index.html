@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PlanetPulse – Global Metrics Globe</title>
+    <link rel="stylesheet" href="styles.css">
+    <!-- Three.js for 3D globe rendering -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <!-- OrbitControls for camera interaction -->
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+</head>
+<body>
+    <div id="app">
+        <!-- Header -->
+        <header id="header">
+            <h1>🌍 PlanetPulse</h1>
+            <p class="tagline">Global Earthquake Metrics Visualization</p>
+        </header>
+
+        <!-- Main content area -->
+        <main id="main-content">
+            <!-- Globe container -->
+            <section id="globe-section">
+                <div id="globe-container">
+                    <canvas id="globe-canvas"></canvas>
+                    <div id="loading-overlay">
+                        <div class="spinner"></div>
+                        <p>Loading globe...</p>
+                    </div>
+                    <div id="error-overlay" class="hidden">
+                        <p id="error-message">Failed to load data</p>
+                        <button id="retry-btn">Retry</button>
+                    </div>
+                </div>
+
+                <!-- Globe controls -->
+                <div id="globe-controls">
+                    <button id="play-pause-btn" class="control-btn" title="Play/Pause rotation">
+                        <span class="icon">⏸</span>
+                        <span class="label">Pause</span>
+                    </button>
+                    <button id="reset-view-btn" class="control-btn" title="Reset view">
+                        <span class="icon">🔄</span>
+                        <span class="label">Reset</span>
+                    </button>
+                </div>
+            </section>
+
+            <!-- Info panel -->
+            <aside id="info-panel">
+                <!-- Metric selector -->
+                <div id="metric-selector" class="panel-section">
+                    <h2>Select Metric</h2>
+                    <div id="metric-buttons">
+                        <button class="metric-btn active" data-metric="magnitude">
+                            📊 Magnitude
+                        </button>
+                        <button class="metric-btn" data-metric="depth">
+                            📏 Depth
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Legend -->
+                <div id="legend" class="panel-section">
+                    <h2>Legend</h2>
+                    <div id="legend-content">
+                        <div id="legend-gradient"></div>
+                        <div id="legend-labels">
+                            <span id="legend-min">0</span>
+                            <span id="legend-max">10</span>
+                        </div>
+                        <p id="legend-description">Earthquake magnitude (Richter scale)</p>
+                    </div>
+                </div>
+
+                <!-- Details panel -->
+                <div id="details-panel" class="panel-section">
+                    <h2>Details</h2>
+                    <div id="details-content">
+                        <p class="placeholder">Hover or click on a data point to see details</p>
+                    </div>
+                </div>
+
+                <!-- Time filter -->
+                <div id="time-filter" class="panel-section">
+                    <h2>Time Range</h2>
+                    <div id="time-filter-content">
+                        <input type="range" id="time-slider" min="1" max="30" value="30">
+                        <div id="time-labels">
+                            <span>1 day</span>
+                            <span id="time-value">30 days</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Stats summary -->
+                <div id="stats-panel" class="panel-section">
+                    <h2>Statistics</h2>
+                    <div id="stats-content">
+                        <div class="stat-item">
+                            <span class="stat-label">Visible Events:</span>
+                            <span id="stat-total" class="stat-value">-</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-label" id="stat-avg-label">Avg Magnitude:</span>
+                            <span id="stat-avg" class="stat-value">-</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-label" id="stat-max-label">Max Magnitude:</span>
+                            <span id="stat-max" class="stat-value">-</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Data source -->
+                <div id="data-source" class="panel-section">
+                    <p class="attribution">
+                        Data: <a href="https://earthquake.usgs.gov/" target="_blank" rel="noopener noreferrer">USGS Earthquake Hazards Program</a>
+                    </p>
+                </div>
+            </aside>
+        </main>
+
+        <!-- Tooltip for hover -->
+        <div id="tooltip" class="hidden"></div>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>

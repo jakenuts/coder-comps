@@ -76,10 +76,10 @@ function lerpColor(a, b, t) {
   const cb = parseInt(b.slice(1), 16);
   const ar = (ca >> 16) & 255, ag = (ca >> 8) & 255, ab = ca & 255;
   const br = (cb >> 16) & 255, bg = (cb >> 8) & 255, bb = cb & 255;
-  const r = Math.round(ar + (br - ar) * t);
-  const g = Math.round(ag + (bg - ag) * t);
-  const b = Math.round(ab + (bb - ab) * t);
-  return `rgb(${r}, ${g}, ${b})`;
+  const rFinal = Math.round(ar + (br - ar) * t);
+  const gFinal = Math.round(ag + (bg - ag) * t);
+  const bFinal = Math.round(ab + (bb - ab) * t);
+  return `rgb(${rFinal}, ${gFinal}, ${bFinal})`;
 }
 
 function makeColorScale(palette) {

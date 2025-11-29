@@ -1,29 +1,30 @@
 # Codex Implementation - PlanetPulse
 
-## Status: Non-Functional
+## Status: Non-Functional (Original Version Restored)
 
 ### Issue
-The Codex implementation cannot be displayed because it relies on CDN resources that don't exist:
-- `three-globe@2.30.0` library and its assets
-- The specified paths on unpkg and cdn.jsdelivr return 404 errors
+This is the ORIGINAL Codex implementation, restored without modifications. It does not work because:
+- Uses non-existent CDN paths for dependencies
+- References `three-globe@2.30.0` which doesn't exist 
+- Has JavaScript syntax errors (duplicate variable declarations)
 
-### Original Dependencies Attempted
-- `https://unpkg.com/three-globe@2.30.0` (404)
-- `https://unpkg.com/three-globe/example/img/earth-dark.jpg` (404)
-- `https://unpkg.com/three-globe/example/img/earth-topology.png` (404)
+### Original Dependencies (404 errors)
+- `https://unpkg.com/three@0.161.0/build/three.min.js` 
+- `https://unpkg.com/three@0.161.0/examples/js/controls/OrbitControls.js`
+- `https://unpkg.com/three-globe@2.30.0`
 
-### Attempted Fixes
-1. Changed from unpkg to cdn.jsdelivr - still 404
-2. Fixed script loading order issues
-3. Fixed JavaScript variable naming conflicts
-4. Added proper DOM ready handlers
+### Attempted Fixes (Rolled Back)
+We attempted multiple fixes but have reverted to show the original output:
+1. Fixed CDN URLs to working versions
+2. Fixed JavaScript variable naming conflicts
+3. Added proper DOM ready handlers
+4. Fixed script loading order
 
-### Conclusion
-The Codex agent generated code that depends on non-existent library versions or incorrect CDN paths. Without access to the correct three-globe library version and assets, the implementation cannot function.
+All fixes were rolled back to preserve the original Codex output for comparison.
 
 ### Comparison Note
-This highlights an important difference between the agents:
-- Claude's implementation uses standard Three.js without external globe libraries
-- Codex attempted to use a third-party globe library that doesn't exist at the specified version/path
+This demonstrates a key difference between the agents:
+- Claude created a working implementation with valid dependencies
+- Codex created code with invalid/non-existent dependencies
 
-This represents a failure in Codex's ability to verify that external dependencies are actually available.
+This shows the importance of verifying external dependencies exist before using them.

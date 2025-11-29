@@ -76,10 +76,10 @@ function lerpColor(a, b, t) {
   const cb = parseInt(b.slice(1), 16);
   const ar = (ca >> 16) & 255, ag = (ca >> 8) & 255, ab = ca & 255;
   const br = (cb >> 16) & 255, bg = (cb >> 8) & 255, bb = cb & 255;
-  const rFinal = Math.round(ar + (br - ar) * t);
-  const gFinal = Math.round(ag + (bg - ag) * t);
-  const bFinal = Math.round(ab + (bb - ab) * t);
-  return `rgb(${rFinal}, ${gFinal}, ${bFinal})`;
+  const r = Math.round(ar + (br - ar) * t);
+  const g = Math.round(ag + (bg - ag) * t);
+  const b = Math.round(ab + (bb - ab) * t);
+  return `rgb(${r}, ${g}, ${b})`;
 }
 
 function makeColorScale(palette) {
@@ -103,37 +103,22 @@ let valueExtent = [0, 1];
 let currentYearIndex = TIMELINE_YEARS.length - 1;
 let playTimer = null;
 
-let globeContainer, legendEl, statusEl, selectEl, spinBtn, resetBtn, playBtn, yearSlider, yearDisplay, detailEl, summaryEl;
+const globeContainer = document.getElementById('globeContainer');
+const legendEl = document.getElementById('legend');
+const statusEl = document.getElementById('status');
+const selectEl = document.getElementById('metricSelect');
+const spinBtn = document.getElementById('spinToggle');
+const resetBtn = document.getElementById('resetView');
+const playBtn = document.getElementById('timePlay');
+const yearSlider = document.getElementById('yearSlider');
+const yearDisplay = document.getElementById('yearDisplay');
+const detailEl = document.getElementById('detailCard');
+const summaryEl = document.getElementById('metricSummary');
 
-// Wait for DOM and scripts to be fully loaded
-window.addEventListener('DOMContentLoaded', () => {
-  // Give time for external scripts to fully initialize
-  setTimeout(() => {
-  globeContainer = document.getElementById('globeContainer');
-  legendEl = document.getElementById('legend');
-  statusEl = document.getElementById('status');
-  selectEl = document.getElementById('metricSelect');
-  spinBtn = document.getElementById('spinToggle');
-  resetBtn = document.getElementById('resetView');
-  playBtn = document.getElementById('timePlay');
-  yearSlider = document.getElementById('yearSlider');
-  yearDisplay = document.getElementById('yearDisplay');
-  detailEl = document.getElementById('detailCard');
-  summaryEl = document.getElementById('metricSummary');
-  
-  yearSlider.max = TIMELINE_YEARS.length - 1;
-  yearSlider.value = currentYearIndex;
-  
-  // Check if required libraries are loaded
-  if (typeof THREE === 'undefined' || typeof ThreeGlobe === 'undefined') {
-    console.error('Required libraries not loaded. THREE:', typeof THREE, 'ThreeGlobe:', typeof ThreeGlobe);
-    globeContainer.innerHTML = '<div class="fallback">Loading libraries failed. Please refresh the page.</div>';
-    return;
-  }
-  
-  init();
-  }, 100); // Small delay to ensure all scripts are parsed
-});
+yearSlider.max = TIMELINE_YEARS.length - 1;
+yearSlider.value = currentYearIndex;
+
+init();
 
 function init() {
   populateMetricSelect();
@@ -143,10 +128,9 @@ function init() {
     animate();
     setStatus('Globe ready.');
   } catch (err) {
-    console.error('Globe initialization error:', err);
-    console.error('Stack trace:', err.stack);
+    console.error(err);
     setStatus('Unable to start 3D globe; showing fallback.');
-    globeContainer.innerHTML = '<div class="fallback">Error: ' + err.message + '</div>';
+    globeContainer.innerHTML = '<div class="fallback">WebGL not available.</div>';
   }
   wireUI();
   updateYearUI();
@@ -182,8 +166,8 @@ function buildScene() {
   scene.add(dir);
 
   globe = new ThreeGlobe({ animateIn: true })
-    .globeImageUrl('https://unpkg.com/three-globe@2.24.13/example/img/earth-dark.jpg')
-    .bumpImageUrl('https://unpkg.com/three-globe@2.24.13/example/img/earth-topology.png')
+    .globeImageUrl('https://unpkg.com/three-globe/example/img/earth-dark.jpg')
+    .bumpImageUrl('https://unpkg.com/three-globe/example/img/earth-topology.png')
     .atmosphereColor('#6ee7ff')
     .atmosphereAltitude(0.18);
 

@@ -182,8 +182,8 @@ function buildScene() {
   scene.add(dir);
 
   globe = new ThreeGlobe({ animateIn: true })
-    .globeImageUrl('https://cdn.jsdelivr.net/npm/three-globe@2.24.13/example/img/earth-dark.jpg')
-    .bumpImageUrl('https://cdn.jsdelivr.net/npm/three-globe@2.24.13/example/img/earth-topology.png')
+    .globeImageUrl('https://unpkg.com/three-globe@2.24.13/example/img/earth-dark.jpg')
+    .bumpImageUrl('https://unpkg.com/three-globe@2.24.13/example/img/earth-topology.png')
     .atmosphereColor('#6ee7ff')
     .atmosphereAltitude(0.18);
 

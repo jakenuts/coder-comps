@@ -107,6 +107,8 @@ let globeContainer, legendEl, statusEl, selectEl, spinBtn, resetBtn, playBtn, ye
 
 // Wait for DOM and scripts to be fully loaded
 window.addEventListener('DOMContentLoaded', () => {
+  // Give time for external scripts to fully initialize
+  setTimeout(() => {
   globeContainer = document.getElementById('globeContainer');
   legendEl = document.getElementById('legend');
   statusEl = document.getElementById('status');
@@ -122,7 +124,15 @@ window.addEventListener('DOMContentLoaded', () => {
   yearSlider.max = TIMELINE_YEARS.length - 1;
   yearSlider.value = currentYearIndex;
   
+  // Check if required libraries are loaded
+  if (typeof THREE === 'undefined' || typeof ThreeGlobe === 'undefined') {
+    console.error('Required libraries not loaded. THREE:', typeof THREE, 'ThreeGlobe:', typeof ThreeGlobe);
+    globeContainer.innerHTML = '<div class="fallback">Loading libraries failed. Please refresh the page.</div>';
+    return;
+  }
+  
   init();
+  }, 100); // Small delay to ensure all scripts are parsed
 });
 
 function init() {
@@ -133,9 +143,10 @@ function init() {
     animate();
     setStatus('Globe ready.');
   } catch (err) {
-    console.error(err);
+    console.error('Globe initialization error:', err);
+    console.error('Stack trace:', err.stack);
     setStatus('Unable to start 3D globe; showing fallback.');
-    globeContainer.innerHTML = '<div class="fallback">WebGL not available.</div>';
+    globeContainer.innerHTML = '<div class="fallback">Error: ' + err.message + '</div>';
   }
   wireUI();
   updateYearUI();

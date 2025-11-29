@@ -66,6 +66,8 @@ function computeExtent(arr, accessor) {
       max = Math.max(max, val);
     }
   });
+  if (min === Infinity || max === -Infinity) return [0, 1];
+  if (min === max) return [min - 0.5, max + 0.5];
   return [min, max];
 }
 
@@ -296,6 +298,7 @@ function refreshPoints() {
     .pointsData(DATA_POINTS);
   updateLegend();
   updateSummary(cfg);
+  if (cfg.seriesKey) setStatus(`${cfg.label}: ${TIMELINE_YEARS[currentYearIndex]}`);
 }
 
 function normalizeValue(value) {

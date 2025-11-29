@@ -103,22 +103,27 @@ let valueExtent = [0, 1];
 let currentYearIndex = TIMELINE_YEARS.length - 1;
 let playTimer = null;
 
-const globeContainer = document.getElementById('globeContainer');
-const legendEl = document.getElementById('legend');
-const statusEl = document.getElementById('status');
-const selectEl = document.getElementById('metricSelect');
-const spinBtn = document.getElementById('spinToggle');
-const resetBtn = document.getElementById('resetView');
-const playBtn = document.getElementById('timePlay');
-const yearSlider = document.getElementById('yearSlider');
-const yearDisplay = document.getElementById('yearDisplay');
-const detailEl = document.getElementById('detailCard');
-const summaryEl = document.getElementById('metricSummary');
+let globeContainer, legendEl, statusEl, selectEl, spinBtn, resetBtn, playBtn, yearSlider, yearDisplay, detailEl, summaryEl;
 
-yearSlider.max = TIMELINE_YEARS.length - 1;
-yearSlider.value = currentYearIndex;
-
-init();
+// Wait for DOM and scripts to be fully loaded
+window.addEventListener('DOMContentLoaded', () => {
+  globeContainer = document.getElementById('globeContainer');
+  legendEl = document.getElementById('legend');
+  statusEl = document.getElementById('status');
+  selectEl = document.getElementById('metricSelect');
+  spinBtn = document.getElementById('spinToggle');
+  resetBtn = document.getElementById('resetView');
+  playBtn = document.getElementById('timePlay');
+  yearSlider = document.getElementById('yearSlider');
+  yearDisplay = document.getElementById('yearDisplay');
+  detailEl = document.getElementById('detailCard');
+  summaryEl = document.getElementById('metricSummary');
+  
+  yearSlider.max = TIMELINE_YEARS.length - 1;
+  yearSlider.value = currentYearIndex;
+  
+  init();
+});
 
 function init() {
   populateMetricSelect();

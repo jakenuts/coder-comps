@@ -123,6 +123,9 @@ init();
 function init() {
   populateMetricSelect();
   try {
+    if (typeof THREE === 'undefined' || typeof ThreeGlobe === 'undefined') {
+      throw new Error('Three.js or ThreeGlobe not loaded');
+    }
     buildScene();
     applyMetric(currentMetricKey);
     animate();
@@ -166,8 +169,8 @@ function buildScene() {
   scene.add(dir);
 
   globe = new ThreeGlobe({ animateIn: true })
-    .globeImageUrl('https://unpkg.com/three-globe/example/img/earth-dark.jpg')
-    .bumpImageUrl('https://unpkg.com/three-globe/example/img/earth-topology.png')
+    .globeImageUrl('https://cdn.jsdelivr.net/npm/three-globe/example/img/earth-dark.jpg')
+    .bumpImageUrl('https://cdn.jsdelivr.net/npm/three-globe/example/img/earth-topology.png')
     .atmosphereColor('#6ee7ff')
     .atmosphereAltitude(0.18);
 

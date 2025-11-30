@@ -8,6 +8,8 @@
  * trade-offs: uses CDN textures & three-globe for speed; dataset is small for clarity; point-based overlay (no choropleth) to stay performant without build tools.
  */
 
+import { OrbitControls } from 'https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/controls/OrbitControls.js';
+
 // ---------------------- data.js ----------------------
 const TIMELINE_YEARS = [2010, 2015, 2020, 2024];
 
@@ -154,7 +156,7 @@ function buildScene() {
   camera = new THREE.PerspectiveCamera(60, width / height, 0.1, 2000);
   camera.position.set(0, 120, 320);
 
-  controls = new THREE.OrbitControls(camera, renderer.domElement);
+  controls = new OrbitControls(camera, renderer.domElement);
   controls.enableDamping = true;
   controls.dampingFactor = 0.08;
   controls.minDistance = 120;

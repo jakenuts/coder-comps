@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>PlanetPulse – Global Metrics Globe</title>
+  <link rel="stylesheet" href="styles.css" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;600&display=swap" rel="stylesheet" />
+</head>
+<body>
+  <div class="app-shell">
+    <header class="app-header">
+      <div>
+        <h1>PlanetPulse</h1>
+        <p>Global Metrics Globe &middot; Track key indicators at a glance.</p>
+      </div>
+      <div class="control-cluster">
+        <label for="metricSelect">Metric</label>
+        <select id="metricSelect" aria-label="Metric selector">
+          <option value="population">Population</option>
+          <option value="emissions">CO₂ Emissions</option>
+          <option value="renewables">Renewable Share</option>
+        </select>
+        <button id="spinToggle" type="button" aria-pressed="true">Pause Spin</button>
+        <button id="resetView" type="button">Reset View</button>
+      </div>
+    </header>
+
+    <main class="layout" aria-live="polite">
+      <section class="globe-panel">
+        <div id="statusBanner" class="status-banner" role="status" hidden></div>
+        <div id="globe" class="globe-canvas" aria-label="Interactive globe visualization"></div>
+        <div id="globeTooltip" class="globe-tooltip" role="dialog" aria-live="polite" hidden></div>
+        <div class="legend" id="legend" aria-live="polite">
+          <div class="legend-header">
+            <strong id="legendTitle">Population</strong>
+            <span id="legendRange">Scale</span>
+          </div>
+          <div class="legend-gradient" id="legendGradient"></div>
+          <div class="legend-scale">
+            <span id="legendMin">0</span>
+            <span id="legendMax">0</span>
+          </div>
+          <p id="legendDescription" class="legend-description"></p>
+        </div>
+      </section>
+
+      <aside class="info-panel" id="infoPanel">
+        <section class="summary-panel" aria-live="polite">
+          <h2>Global Snapshot</h2>
+          <div id="summaryGrid" class="summary-grid">
+            <div class="summary-card">
+              <span class="label">Top City</span>
+              <span class="value">—</span>
+              <span class="description">Awaiting data</span>
+            </div>
+            <div class="summary-card">
+              <span class="label">Average</span>
+              <span class="value">—</span>
+              <span class="description">Metric scale</span>
+            </div>
+            <div class="summary-card">
+              <span class="label">Spread</span>
+              <span class="value">—</span>
+              <span class="description">Across tracked cities</span>
+            </div>
+          </div>
+        </section>
+        <hr class="panel-divider" aria-hidden="true" />
+        <section>
+          <h2 id="infoTitle">Details on Demand</h2>
+          <div id="infoContent">
+            <p>Select a glowing marker to inspect a location.</p>
+          </div>
+        </section>
+      </aside>
+    </main>
+
+    <footer class="app-footer">
+      <small>Data is a curated sample for demo purposes only. Built with Three.js.</small>
+    </footer>
+  </div>
+  <script type="module" src="app.js"></script>
+</body>
+</html>

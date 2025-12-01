@@ -93,15 +93,28 @@ function makeColorScale(palette) {
   };
 }
 
+const motionPreference = typeof window.matchMedia === 'function'
+  ? window.matchMedia('(prefers-reduced-motion: reduce)')
+  : {
+      matches: false,
+      addEventListener: null,
+      removeEventListener: null,
+      addListener: null,
+      removeListener: null
+    };
+
 // ---------------------- scene.js ----------------------
 let renderer, camera, scene, controls, globe;
-let autoRotate = true;
+let autoRotate = !motionPreference.matches;
+let userSpinOverride = false;
 let isUserInteracting = false;
 let currentMetricKey = 'co2';
 let colorScale = makeColorScale(METRICS[currentMetricKey].palette);
 let valueExtent = [0, 1];
 let currentYearIndex = TIMELINE_YEARS.length - 1;
 let playTimer = null;
+let resumeSpinOnFocus = false;
+let resumeTimelineOnFocus = false;
 
 const globeContainer = document.getElementById('globeContainer');
 const legendEl = document.getElementById('legend');
@@ -114,6 +127,7 @@ const yearSlider = document.getElementById('yearSlider');
 const yearDisplay = document.getElementById('yearDisplay');
 const detailEl = document.getElementById('detailCard');
 const summaryEl = document.getElementById('metricSummary');
+const insightsEl = document.getElementById('insightsList');
 
 yearSlider.max = TIMELINE_YEARS.length - 1;
 yearSlider.value = currentYearIndex;
@@ -134,6 +148,11 @@ function init() {
   }
   wireUI();
   updateYearUI();
+  updateSpinButton();
+  observeMotionPreference();
+  if (typeof document !== 'undefined' && 'addEventListener' in document) {
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+  }
   window.addEventListener('resize', handleResize);
 }
 
@@ -214,6 +233,7 @@ function wireUI() {
     applyMetric(e.target.value);
   });
   spinBtn.addEventListener('click', () => {
+    userSpinOverride = true;
     autoRotate = !autoRotate;
     updateSpinButton();
   });
@@ -239,9 +259,14 @@ function updateYearUI() {
   const metricCfg = METRICS[currentMetricKey];
   const timelineEl = document.querySelector('.timeline');
   const isTemporal = Boolean(metricCfg.seriesKey);
-  if (timelineEl) timelineEl.style.display = isTemporal ? 'flex' : 'none';
+  if (timelineEl) {
+    timelineEl.style.display = isTemporal ? 'flex' : 'none';
+    timelineEl.setAttribute('aria-hidden', String(!isTemporal));
+  }
   yearSlider.disabled = !isTemporal;
+  yearSlider.setAttribute('aria-disabled', String(!isTemporal));
   playBtn.disabled = !isTemporal;
+  playBtn.setAttribute('aria-disabled', String(!isTemporal));
 }
 
 function toggleTimelinePlay() {
@@ -265,9 +290,12 @@ function stopTimelinePlay() {
 }
 
 function resetView() {
-  controls.reset();
-  camera.position.set(0, 120, 320);
-  autoRotate = true;
+  controls?.reset();
+  if (camera?.position) {
+    camera.position.set(0, 120, 320);
+  }
+  userSpinOverride = false;
+  autoRotate = motionPreference.matches ? false : true;
   updateSpinButton();
 }
 
@@ -284,6 +312,7 @@ function applyMetric(metricKey) {
 
   updateLegend();
   updateSummary(cfg);
+  updateInsights(cfg);
   setStatus(`${cfg.label} loaded.`);
   updateYearUI();
   if (!cfg.seriesKey) stopTimelinePlay();
@@ -298,6 +327,7 @@ function refreshPoints() {
     .pointsData(DATA_POINTS);
   updateLegend();
   updateSummary(cfg);
+  updateInsights(cfg);
   if (cfg.seriesKey) setStatus(`${cfg.label}: ${TIMELINE_YEARS[currentYearIndex]}`);
 }
 
@@ -314,12 +344,18 @@ function sizeForValue(val) {
   return 0.04 + t * 0.08; // keeps points visible but varied
 }
 
-function getMetricValue(d, cfg) {
+function getMetricValue(point, cfg) {
+  return getMetricValueByYear(point, cfg, currentYearIndex);
+}
+
+function getMetricValueByYear(point, cfg, yearIndex) {
   if (cfg.seriesKey) {
-    const series = Array.isArray(d[cfg.seriesKey]) ? d[cfg.seriesKey] : [];
-    return series[currentYearIndex] ?? series[series.length - 1];
+    const series = Array.isArray(point[cfg.seriesKey]) ? point[cfg.seriesKey] : [];
+    if (!series.length) return NaN;
+    const safeIndex = clamp(yearIndex, 0, series.length - 1);
+    return series[safeIndex];
   }
-  return cfg.accessor(d);
+  return cfg.accessor(point);
 }
 
 function labelForPoint(d) {
@@ -329,7 +365,7 @@ function labelForPoint(d) {
     ? `$${val.toLocaleString('en-US')}`
     : `${val}${cfg.unit}`;
   const yearPart = cfg.seriesKey ? ` (${TIMELINE_YEARS[currentYearIndex]})` : '';
-  return `${d.name}<br/>${cfg.label}${yearPart}: ${formatted}<br/>Population: ${d.population}M`;
+  return `${d.name}<br/>${cfg.label}${yearPart}: ${formatted}<br/>Population: ${formatPopulation(d.population)}`;
 }
 
 function handleHover(point) {
@@ -365,7 +401,7 @@ function setDetail(point, pinned) {
       <span class="pill">${cfg.label}</span>
     </div>
     <div class="data-row"><span>Value${cfg.seriesKey ? ' (' + TIMELINE_YEARS[currentYearIndex] + ')' : ''}</span><span>${formatted}</span></div>
-    <div class="data-row"><span>Population</span><span>${point.population}M</span></div>
+    <div class="data-row"><span>Population</span><span>${formatPopulation(point.population)}</span></div>
     <div class="data-row"><span>Renewables (${TIMELINE_YEARS[currentYearIndex]})</span><span>${renNow}%</span></div>
     <div class="data-row"><span>CO₂ (${TIMELINE_YEARS[currentYearIndex]})</span><span>${co2Now}t</span></div>
     <div class="data-row"><span>GDP per capita</span><span>$${point.gdp.toLocaleString('en-US')}</span></div>
@@ -395,12 +431,124 @@ function updateSummary(cfg) {
   summaryEl.innerHTML = `${cfg.description}${year}<br><strong>Range:</strong> ${formatValue(min, cfg.unit)} – ${formatValue(max, cfg.unit)}`;
 }
 
+function updateInsights(cfg) {
+  if (!insightsEl) return;
+  const snapshots = DATA_POINTS.map(point => {
+    const value = getMetricValue(point, cfg);
+    const prevIndex = cfg.seriesKey ? Math.max(currentYearIndex - 1, 0) : currentYearIndex;
+    const prev = cfg.seriesKey ? getMetricValueByYear(point, cfg, prevIndex) : null;
+    return { point, value, prev };
+  }).filter(item => Number.isFinite(item.value));
+
+  if (!snapshots.length) {
+    insightsEl.innerHTML = '<li>No data available.</li>';
+    return;
+  }
+
+  const ranked = snapshots.sort((a, b) => b.value - a.value);
+  const leader = ranked[0];
+  const laggard = ranked[ranked.length - 1];
+  const average = ranked.reduce((sum, item) => sum + item.value, 0) / ranked.length;
+  const spread = leader.value - laggard.value;
+
+  const renderDelta = item => {
+    if (!cfg.seriesKey || item.prev == null || !Number.isFinite(item.prev)) {
+      return '<span class="insight-delta neutral">–</span>';
+    }
+    const delta = item.value - item.prev;
+    if (Math.abs(delta) < 0.01) {
+      return '<span class="insight-delta neutral">steady</span>';
+    }
+    const positive = delta > 0;
+    const cls = positive ? 'positive' : 'negative';
+    const arrow = positive ? '▲' : '▼';
+    return `<span class="insight-delta ${cls}">${arrow} ${formatValue(Math.abs(delta), cfg.unit)}</span>`;
+  };
+
+  const renderRow = (label, item) => `
+    <li>
+      <div>
+        <div class="insight-label">${label}</div>
+        <strong>${item.point.name}</strong>
+      </div>
+      <div>
+        <span class="insight-value">${formatValue(item.value, cfg.unit)}</span>
+        ${renderDelta(item)}
+      </div>
+    </li>
+  `;
+
+  insightsEl.innerHTML = `
+    ${renderRow('Leader', leader)}
+    ${renderRow('Laggard', laggard)}
+    <li>
+      <div>
+        <div class="insight-label">Average</div>
+        <strong>${formatValue(average, cfg.unit)}</strong>
+      </div>
+      <div class="insight-delta neutral">Spread ${formatValue(spread, cfg.unit)}</div>
+    </li>
+  `;
+}
+
 function formatValue(val, unit) {
   if (!Number.isFinite(val)) return 'n/a';
   if (unit === '$') return `$${Math.round(val).toLocaleString('en-US')}`;
   return `${Math.round(val * 10) / 10}${unit}`;
 }
 
+function formatPopulation(millions) {
+  if (!Number.isFinite(millions)) return 'n/a';
+  if (millions >= 1) return `${Math.round(millions * 10) / 10}M`;
+  return `${Math.round(millions * 1000)}K`;
+}
+
 function setStatus(msg) {
+  if (!statusEl) return;
   statusEl.textContent = msg;
+}
+
+function observeMotionPreference() {
+  const applyPreference = mq => {
+    if (mq.matches) {
+      if (autoRotate) setStatus('Spin paused to respect reduced-motion preference.');
+      autoRotate = false;
+      updateSpinButton();
+    } else if (!userSpinOverride) {
+      autoRotate = true;
+      updateSpinButton();
+    }
+  };
+
+  if (typeof motionPreference.addEventListener === 'function') {
+    motionPreference.addEventListener('change', applyPreference);
+  } else if (typeof motionPreference.addListener === 'function') {
+    motionPreference.addListener(applyPreference);
+  }
+
+  applyPreference(motionPreference);
+}
+
+function handleVisibilityChange() {
+  if (typeof document === 'undefined') return;
+  if (document.hidden) {
+    resumeSpinOnFocus = autoRotate;
+    resumeTimelineOnFocus = Boolean(playTimer);
+    stopTimelinePlay();
+    if (autoRotate) {
+      autoRotate = false;
+      updateSpinButton();
+    }
+    setStatus('Paused while tab inactive.');
+  } else {
+    if (resumeSpinOnFocus && !motionPreference.matches && !userSpinOverride) {
+      autoRotate = true;
+      updateSpinButton();
+    }
+    if (resumeTimelineOnFocus && METRICS[currentMetricKey].seriesKey) {
+      toggleTimelinePlay();
+    }
+    resumeSpinOnFocus = false;
+    resumeTimelineOnFocus = false;
+  }
 }
